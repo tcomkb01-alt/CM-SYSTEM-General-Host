@@ -108,6 +108,9 @@ ob_start();
         <button onclick="openAddStudentModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center shadow-md flex-1 md:flex-none whitespace-nowrap">
             <i class="fa-solid fa-user-plus mr-2"></i> เพิ่มนักเรียน
         </button>
+        <button onclick="openWheelModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center shadow-md flex-1 md:flex-none whitespace-nowrap">
+            <i class="fa-solid fa-dharmachakra mr-2"></i> วงล้อสุ่ม
+        </button>
     </div>
 </div>
 
@@ -463,6 +466,47 @@ ob_start();
             <div class="p-6">
                 <div id="studentAssignmentsList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
                     <!-- Dynamic content -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Random Wheel Modal -->
+<div id="wheelModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900 bg-opacity-80 backdrop-blur-sm transition-opacity" onclick="closeWheelModal()"></div>
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg relative z-10 animate__animated animate__zoomIn" style="animation-duration: 0.4s;">
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-xl font-black text-slate-800 flex items-center">
+                    <i class="fa-solid fa-dharmachakra text-amber-500 mr-3"></i> วงล้อสุ่มรายชื่อ
+                </h3>
+                <button onclick="closeWheelModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-red-100 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-8 text-center relative overflow-hidden flex flex-col items-center">
+                <!-- Pointer -->
+                <div class="absolute top-8 left-1/2 -translate-x-1/2 z-20 w-8 h-8">
+                    <div class="w-0 h-0 border-l-[16px] border-r-[16px] border-t-[24px] border-l-transparent border-r-transparent border-t-red-500 drop-shadow-md"></div>
+                </div>
+                
+                <!-- Canvas container -->
+                <div class="relative w-80 h-80 mx-auto rounded-full shadow-inner border-4 border-slate-100 bg-slate-50 overflow-hidden mb-6">
+                    <canvas id="wheelCanvas" width="320" height="320" class="absolute top-0 left-0"></canvas>
+                </div>
+
+                <div id="wheelResult" class="h-14 flex items-center justify-center w-full bg-slate-50 rounded-xl border border-slate-200 mb-6 font-bold text-lg text-slate-700">
+                    <span class="text-slate-400 font-normal text-sm">กดหมุนวงล้อเพื่อเริ่มสุ่ม</span>
+                </div>
+
+                <div class="flex gap-3 w-full">
+                    <button onclick="resetWheel()" class="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-colors w-1/3">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> รีเซ็ต
+                    </button>
+                    <button id="spinBtn" onclick="spinWheel()" class="px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-black hover:shadow-lg hover:scale-105 transition-all w-2/3 shadow-amber-500/30">
+                        <i class="fa-solid fa-play mr-2"></i> หมุนเลย!
+                    </button>
                 </div>
             </div>
         </div>
@@ -878,6 +922,165 @@ async function viewStudentAssignments(studentId, firstName) {
 function closeStudentAssignmentsModal() {
     document.getElementById('studentAssignmentsModal').classList.add('hidden');
 }
+// --- Wheel of Names Logic ---
+const initialWheelStudents = <?= json_encode(array_values(array_map(function($s) {
+    return ['id' => $s['id'], 'name' => $s['first_name'] . ' ' . mb_substr($s['last_name'], 0, 1) . '.'];
+}, $students))) ?>;
+
+let currentWheelStudents = [...initialWheelStudents];
+const wheelCanvas = document.getElementById('wheelCanvas');
+const wheelCtx = wheelCanvas?.getContext('2d');
+let currentAngle = 0;
+let spinTimeout = null;
+let isSpinning = false;
+
+const wheelColors = [
+    '#F87171', '#FBBF24', '#34D399', '#60A5FA', '#A78BFA', '#F472B6', 
+    '#FB923C', '#4ADE80', '#38BDF8', '#818CF8', '#E879F9', '#FB7185'
+];
+
+function drawWheel() {
+    if (!wheelCtx) return;
+    const w = wheelCanvas.width;
+    const h = wheelCanvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const radius = w / 2;
+    const numSlices = currentWheelStudents.length;
+
+    wheelCtx.clearRect(0, 0, w, h);
+
+    if (numSlices === 0) {
+        wheelCtx.beginPath();
+        wheelCtx.arc(cx, cy, radius, 0, 2 * Math.PI);
+        wheelCtx.fillStyle = '#f1f5f9';
+        wheelCtx.fill();
+        wheelCtx.fillStyle = '#94a3b8';
+        wheelCtx.font = 'bold 16px "Prompt"';
+        wheelCtx.textAlign = 'center';
+        wheelCtx.textBaseline = 'middle';
+        wheelCtx.fillText('หมดรายชื่อแล้ว', cx, cy);
+        return;
+    }
+
+    const arc = (2 * Math.PI) / numSlices;
+
+    for (let i = 0; i < numSlices; i++) {
+        const angle = currentAngle + i * arc;
+        
+        wheelCtx.beginPath();
+        wheelCtx.fillStyle = wheelColors[i % wheelColors.length];
+        wheelCtx.moveTo(cx, cy);
+        wheelCtx.arc(cx, cy, radius, angle, angle + arc);
+        wheelCtx.lineTo(cx, cy);
+        wheelCtx.fill();
+        
+        wheelCtx.strokeStyle = '#ffffff';
+        wheelCtx.lineWidth = 2;
+        wheelCtx.stroke();
+
+        wheelCtx.save();
+        wheelCtx.translate(cx, cy);
+        wheelCtx.rotate(angle + arc / 2);
+        wheelCtx.textAlign = 'right';
+        wheelCtx.fillStyle = '#fff';
+        wheelCtx.font = 'bold 14px "Prompt"';
+        wheelCtx.shadowColor = 'rgba(0,0,0,0.2)';
+        wheelCtx.shadowBlur = 4;
+        wheelCtx.shadowOffsetX = 1;
+        wheelCtx.shadowOffsetY = 1;
+        // Draw text
+        wheelCtx.fillText(currentWheelStudents[i].name, radius - 15, 5);
+        wheelCtx.restore();
+    }
+}
+
+function easeOut(t, b, c, d) {
+    const ts = (t /= d) * t;
+    const tc = ts * t;
+    return b + c * (tc + -3 * ts + 3 * t);
+}
+
+function spinWheel() {
+    if (isSpinning || currentWheelStudents.length === 0) return;
+    isSpinning = true;
+    document.getElementById('spinBtn').disabled = true;
+    document.getElementById('wheelResult').innerHTML = '<span class="text-slate-400 font-normal animate-pulse text-sm">กำลังหมุน...</span>';
+
+    const spinTimeTotal = 3000 + Math.random() * 2000;
+    const spinAngleStart = Math.random() * 10 + 20; 
+    let spinTime = 0;
+
+    function rotate() {
+        spinTime += 30;
+        if (spinTime >= spinTimeTotal) {
+            stopRotateWheel();
+            return;
+        }
+        const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+        currentAngle += (spinAngle * Math.PI / 180);
+        drawWheel();
+        spinTimeout = requestAnimationFrame(rotate);
+    }
+
+    rotate();
+}
+
+function stopRotateWheel() {
+    clearTimeout(spinTimeout);
+    isSpinning = false;
+    document.getElementById('spinBtn').disabled = false;
+    
+    if (currentWheelStudents.length === 0) return;
+
+    // 90 degrees offset for pointer at the top (12 o'clock)
+    let degrees = (currentAngle * 180 / Math.PI) % 360;
+    let pointerAngle = 270; // 270 degrees is top
+    let sliceAngle = 360 / currentWheelStudents.length;
+    
+    // Normalize target angle
+    let targetAngle = (pointerAngle - degrees + 360) % 360;
+    let index = Math.floor(targetAngle / sliceAngle);
+
+    const winner = currentWheelStudents[index];
+    
+    document.getElementById('wheelResult').innerHTML = `<span class="text-amber-600 animate__animated animate__tada text-xl font-black"><i class="fa-solid fa-star text-amber-400 mr-2"></i> ${winner.name}</span>`;
+    
+    Swal.fire({
+        title: '🎉 ผู้โชคดี!',
+        text: winner.name,
+        icon: 'success',
+        confirmButtonText: 'รับทราบ',
+        confirmButtonColor: '#f59e0b'
+    }).then(() => {
+        // Remove from array after acknowledge
+        currentWheelStudents.splice(index, 1);
+        drawWheel();
+        if (currentWheelStudents.length === 0) {
+            document.getElementById('wheelResult').innerHTML = '<span class="text-slate-400 font-normal text-sm">สุ่มครบทุกคนแล้ว</span>';
+        }
+    });
+}
+
+function openWheelModal() {
+    document.getElementById('wheelModal').classList.remove('hidden');
+    drawWheel();
+}
+
+function closeWheelModal() {
+    if (!isSpinning) {
+        document.getElementById('wheelModal').classList.add('hidden');
+    }
+}
+
+function resetWheel() {
+    if (isSpinning) return;
+    currentWheelStudents = [...initialWheelStudents];
+    currentAngle = 0;
+    document.getElementById('wheelResult').innerHTML = '<span class="text-slate-400 font-normal text-sm">รีเซ็ตวงล้อแล้ว กดหมุนวงล้อเพื่อเริ่มสุ่ม</span>';
+    drawWheel();
+}
+
 </script>
 
 <?php

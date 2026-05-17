@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="<?= $_ENV['APP_URL'] ?? '' ?>/css/swal-custom.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
     </style>
@@ -95,10 +96,39 @@
                 </div>
             </form>
             
-            <div class="mt-12 text-center">
+    <div class="mt-12 text-center">
                 <p class="text-xs text-slate-400 font-medium">
                     &copy; <?= date('Y') ?> Classroom Management System. All rights reserved.
                 </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner" class="fixed bottom-0 inset-x-0 pb-2 sm:pb-5 z-50 hidden animate__animated animate__slideInUp">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+            <div class="p-3 sm:p-4 rounded-xl bg-slate-900/95 backdrop-blur shadow-2xl border border-slate-800">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+                    <div class="flex items-start sm:items-center w-full sm:w-auto flex-1">
+                        <span class="flex p-2 rounded-lg bg-indigo-600 shrink-0 mt-1 sm:mt-0">
+                            <svg class="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path>
+                            </svg>
+                        </span>
+                        <p class="ml-3 font-medium text-white text-xs sm:text-sm leading-relaxed sm:leading-normal">
+                            <span class="sm:hidden">เว็บไซต์นี้ใช้คุกกี้เพื่อประสบการณ์ที่ดีในการใช้งานของคุณ</span>
+                            <span class="hidden sm:inline">เราใช้คุกกี้เพื่อพัฒนาประสิทธิภาพและประสบการณ์ที่ดีในการใช้เว็บไซต์ของคุณ</span>
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 w-full sm:w-auto flex flex-row gap-2 sm:gap-3">
+                        <a href="<?= rtrim($_ENV['APP_URL'] ?? '', '/') ?>/cookie-policy" class="flex-1 sm:flex-none flex items-center justify-center px-3 py-2 border border-slate-700 rounded-lg shadow-sm text-xs sm:text-sm font-medium text-slate-300 bg-transparent hover:bg-slate-800 transition-colors">
+                            อ่านนโยบาย
+                        </a>
+                        <button id="acceptCookies" class="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                            ยอมรับทั้งหมด
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -107,6 +137,22 @@
     <script>
         // ใช้ base URL จาก meta tag (dynamic)
         const BASE_URL = document.querySelector('meta[name="base-url"]')?.content || '';
+
+        // Cookie Banner Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const banner = document.getElementById('cookieBanner');
+            const acceptBtn = document.getElementById('acceptCookies');
+            
+            if (!localStorage.getItem('cookie_consent')) {
+                banner.classList.remove('hidden');
+            }
+
+            acceptBtn.addEventListener('click', () => {
+                localStorage.setItem('cookie_consent', 'accepted');
+                banner.classList.replace('animate__slideInUp', 'animate__slideOutDown');
+                setTimeout(() => banner.classList.add('hidden'), 1000);
+            });
+        });
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();

@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="<?= $_ENV['APP_URL'] ?? '' ?>/css/swal-custom.css">
     <style>
         body { font-family: 'Prompt', 'Inter', sans-serif; }
         .sidebar-item-active { background-color: rgba(99, 102, 241, 0.1); color: #4f46e5; border-right: 4px solid #4f46e5; }

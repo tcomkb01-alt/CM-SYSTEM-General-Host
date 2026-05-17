@@ -25,6 +25,11 @@ class AuthController extends Controller
         $this->view('auth.login');
     }
 
+    public function cookiePolicy()
+    {
+        $this->view('auth.cookie_policy');
+    }
+
     public function login()
     {
         $request = new Request();

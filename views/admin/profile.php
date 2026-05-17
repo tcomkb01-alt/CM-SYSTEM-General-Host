@@ -5,6 +5,23 @@
 ob_start();
 ?>
 
+<!-- Breadcrumbs -->
+<nav class="flex mb-6" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="<?= $_ENV['APP_URL'] ?? '' ?>/admin/dashboard" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all">
+                <i class="fa-solid fa-house mr-2 text-xs"></i> แดชบอร์ด
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] mx-2"></i>
+                <span class="text-sm font-bold text-slate-800 tracking-tight">ข้อมูลส่วนตัว</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
 <div class="max-w-4xl mx-auto">
     <!-- Header -->
     <div class="mb-8">
@@ -148,6 +165,17 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
 // Handle Password Update
 document.getElementById('passwordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // Demo Mode Lock
+    Swal.fire({
+        icon: 'warning',
+        title: 'ระบบถูกล็อคชั่วคราว',
+        text: 'ขออภัย ไม่สามารถเปลี่ยนรหัสผ่านได้ในขณะนี้ เพื่อป้องกันผู้ใช้งานอื่นไม่สามารถเข้าสู่ระบบในโหมด Demo',
+        confirmButtonText: 'เข้าใจแล้ว',
+        confirmButtonColor: '#4f46e5'
+    });
+    return;
+
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
 

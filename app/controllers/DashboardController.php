@@ -37,6 +37,29 @@ class DashboardController extends Controller
             WHERE c.admin_id = :id AND a.due_date >= CURDATE()
         ", [':id' => $adminId])['total'] ?? 0;
 
+        // ดึงข้อมูลชั้นเรียนล่าสุด
+        $recentClasses = $db->query("
+            SELECT id, subject_name, room_code, created_at 
+            FROM classrooms 
+            WHERE admin_id = :id 
+            ORDER BY created_at DESC 
+            LIMIT 5
+        ", [':id' => $adminId]) ?: [];
+
+        // ดึงข้อมูลกิจกรรมล่าสุด
+        $recentActivities = $db->query("
+            SELECT action, entity_type, description, created_at 
+            FROM activity_logs 
+            WHERE user_id = :id 
+            ORDER BY created_at DESC 
+            LIMIT 5
+        ", [':id' => $adminId]) ?: [];
+
+        // ดึงข้อมูล License
+        $licenseCheck = \Core\LicenseManager::check();
+        $licenseData = $licenseCheck['data'] ?? \Core\LicenseManager::getCache() ?? [];
+        $licenseData['status'] = $licenseCheck['status'] ?? 'unlicensed';
+
         $data = [
             'title' => 'แผงควบคุม (Dashboard)',
             'stats' => [
@@ -44,7 +67,10 @@ class DashboardController extends Controller
                 'total_classes' => $totalClasses,
                 'attendance_today' => $attendancePercent . '%',
                 'pending_assignments' => $pendingAssignments
-            ]
+            ],
+            'recent_classes' => $recentClasses,
+            'recent_activities' => $recentActivities,
+            'license_data' => $licenseData
         ];
         
         $this->view('admin.dashboard', $data);

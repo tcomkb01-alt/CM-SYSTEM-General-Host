@@ -1,0 +1,213 @@
+/* ═══════════════════════════════════════════════
+   SweetAlert2 — Obsidian Luxury Theme
+   Fonts: Playfair Display (titles) + DM Sans (body)
+   ═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ── POPUP BASE ── */
+div:where(.swal2-container) div:where(.swal2-popup) {
+    border-radius: 28px !important;
+    padding: 2.5rem 2rem 2rem !important;
+    background: linear-gradient(145deg, #1a1625 0%, #12101a 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+        0 40px 80px -20px rgba(0, 0, 0, 0.6),
+        0 2px 0 rgba(255, 255, 255, 0.06) inset !important;
+    font-family: 'DM Sans', 'Prompt', sans-serif !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Gold top-border shimmer */
+div:where(.swal2-container) div:where(.swal2-popup)::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    right: 0 !important;
+    height: 1px !important;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.5), transparent) !important;
+    pointer-events: none !important;
+}
+
+/* ── TITLE ── */
+div:where(.swal2-container) h2:where(.swal2-title) {
+    font-family: 'Playfair Display', serif !important;
+    font-size: 1.6rem !important;
+    font-weight: 500 !important;
+    color: #f0ece6 !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.2 !important;
+    margin-bottom: 0.75rem !important;
+}
+
+/* ── BODY TEXT ── */
+div:where(.swal2-container) div:where(.swal2-html-container) {
+    font-size: 0.95rem !important;
+    color: rgba(240, 236, 230, 0.55) !important;
+    font-weight: 300 !important;
+    line-height: 1.65 !important;
+    margin-top: 0.25rem !important;
+}
+
+/* ── ICONS ── */
+div:where(.swal2-icon) {
+    border-width: 0 !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 18px !important;
+    margin: 0 auto 1.5rem auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+div:where(.swal2-icon).swal2-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important;
+    box-shadow: 0 8px 32px rgba(16, 185, 129, 0.15) !important;
+}
+
+div:where(.swal2-icon).swal2-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05)) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important;
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.15) !important;
+}
+
+div:where(.swal2-icon).swal2-warning {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(212, 175, 55, 0.06)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+    color: #f5c518 !important;
+    box-shadow: 0 8px 32px rgba(212, 175, 55, 0.12) !important;
+}
+
+div:where(.swal2-icon).swal2-info {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05)) !important;
+    border: 1px solid rgba(99, 102, 241, 0.2) !important;
+    color: #a5b4fc !important;
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15) !important;
+}
+
+div:where(.swal2-icon).swal2-question {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: rgba(240, 236, 230, 0.6) !important;
+}
+
+/* ── ACTIONS ── */
+div:where(.swal2-container) div:where(.swal2-actions) {
+    gap: 0.75rem !important;
+    margin-top: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+    padding-top: 1.5rem !important;
+}
+
+/* Confirm button — Gold */
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
+    background: linear-gradient(135deg, #d4af37, #b8860b) !important;
+    color: #0d0b12 !important;
+    border-radius: 14px !important;
+    padding: 0.8rem 1.75rem !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 0.01em !important;
+    border: none !important;
+    box-shadow:
+        0 4px 20px rgba(212, 175, 55, 0.3),
+        0 1px 0 rgba(255, 255, 255, 0.2) inset !important;
+    transition: all 0.2s ease !important;
+}
+
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
+    background: linear-gradient(135deg, #e0bf4a, #c49a1a) !important;
+    transform: translateY(-2px) !important;
+    box-shadow:
+        0 8px 30px rgba(212, 175, 55, 0.45),
+        0 1px 0 rgba(255, 255, 255, 0.2) inset !important;
+}
+
+/* Cancel button — Ghost */
+div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: rgba(240, 236, 230, 0.55) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px !important;
+    padding: 0.8rem 1.75rem !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease !important;
+}
+
+div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel:hover {
+    background: rgba(255, 255, 255, 0.09) !important;
+    color: rgba(240, 236, 230, 0.85) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Deny button — Red Danger */
+div:where(.swal2-container) button:where(.swal2-styled).swal2-deny {
+    background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+    color: #fff !important;
+    border-radius: 14px !important;
+    padding: 0.8rem 1.75rem !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    border: none !important;
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3) !important;
+    transition: all 0.2s ease !important;
+}
+
+div:where(.swal2-container) button:where(.swal2-styled).swal2-deny:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 30px rgba(239, 68, 68, 0.45) !important;
+}
+
+/* ── CLOSE BUTTON ── */
+div:where(.swal2-container) button:where(.swal2-close) {
+    color: rgba(240, 236, 230, 0.25) !important;
+    font-size: 1.5rem !important;
+    transition: color 0.2s ease !important;
+}
+
+div:where(.swal2-container) button:where(.swal2-close):hover {
+    color: rgba(240, 236, 230, 0.7) !important;
+    background: transparent !important;
+}
+
+/* ── OVERLAY ── */
+div:where(.swal2-container) {
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    background: rgba(5, 3, 12, 0.65) !important;
+}
+
+/* ── TOAST ── */
+div:where(.swal2-container).swal2-top-end>div:where(.swal2-popup),
+div:where(.swal2-container).swal2-top-right>div:where(.swal2-popup) {
+    border-radius: 16px !important;
+    padding: 1rem 1.25rem !important;
+    border-left: 3px solid #34d399 !important;
+}
+
+/* ── LOADING ── */
+div:where(.swal2-container) button:where(.swal2-styled)[data-loading="true"] {
+    opacity: 0.7 !important;
+    transform: none !important;
+}
+
+/* ── ANIMATION ── */
+@keyframes swal2-show {
+    0% {
+        transform: scale(0.92) translateY(12px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}

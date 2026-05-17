@@ -6,6 +6,31 @@
 ob_start();
 ?>
 
+<!-- Breadcrumbs -->
+<nav class="flex mb-6" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="<?= $_ENV['APP_URL'] ?? '' ?>/admin/dashboard" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all">
+                <i class="fa-solid fa-house mr-2 text-xs"></i> แดชบอร์ด
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] mx-2"></i>
+                <a href="<?= $_ENV['APP_URL'] ?? '' ?>/admin/apps" class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all">
+                    ศูนย์รวมแอป
+                </a>
+            </div>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] mx-2"></i>
+                <span class="text-sm font-bold text-slate-800 tracking-tight">ระบบสร้างบัตรนักเรียน</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
 <div class="mb-10">
     <div class="flex justify-between items-end">
         <div>

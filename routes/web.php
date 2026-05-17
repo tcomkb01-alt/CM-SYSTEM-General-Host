@@ -11,6 +11,7 @@ $router->get('/', function() {
 $router->get('/login', 'AuthController@showLogin');
 $router->post('/login', 'AuthController@login');
 $router->get('/logout', 'AuthController@logout');
+$router->get('/cookie-policy', 'AuthController@cookiePolicy');
 
 // Public Attendance (no auth required - students scan QR)
 $router->get('/attendance/checkin/{sessionId}', 'AttendanceController@checkinPage');

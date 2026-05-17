@@ -68,6 +68,10 @@ class ProfileController extends Controller
      */
     public function changePassword()
     {
+        // Demo Mode Lock
+        $this->json(['success' => false, 'message' => 'ไม่สามารถเปลี่ยนรหัสผ่านได้ในโหมด Demo'], 403);
+        return;
+
         $request = new Request();
         $userId = Session::get('user_id');
         
