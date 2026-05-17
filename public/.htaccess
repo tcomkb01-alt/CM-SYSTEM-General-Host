@@ -1,0 +1,10 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # ถ้ามีไฟล์/โฟลเดอร์จริง ให้เข้าถึงตรงๆ (CSS, JS, Images)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # ที่เหลือส่งไป index.php หมด
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
