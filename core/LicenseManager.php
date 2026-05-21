@@ -23,11 +23,17 @@ class LicenseManager {
     }
 
     private static $cache_file = __DIR__ . '/../storage/license.cache';
+    private static $lock_file = __DIR__ . '/../storage/license.lock';
 
     /**
      * Check if the license is valid (Local Cache + periodic online check)
      */
     public static function check() {
+        // Check for emergency lock (file deletion detected)
+        if (self::isEmergencyLock()) {
+            return ['status' => 'tampered', 'message' => 'License file tampering detected.'];
+        }
+
         $cache = self::getCache();
 
         // 1. If no cache, must activate
@@ -184,7 +190,15 @@ class LicenseManager {
                 OPENSSL_RAW_DATA,
                 $iv
             );
-            return json_decode($decrypted, true);
+            $decoded = json_decode($decrypted, true);
+            
+            // Verify cache integrity (checksum)
+            if (!self::verifyCacheIntegrity($decoded)) {
+                self::createEmergencyLock();
+                return null;
+            }
+            
+            return $decoded;
         } catch (Exception $e) {
             return null;
         }
@@ -196,16 +210,69 @@ class LicenseManager {
         if (!file_exists($dir)) {
             mkdir($dir, 0755, true);
         }
+        
+        // Add checksum for integrity verification
+        $data['_checksum'] = hash('sha256', json_encode($data));
+        
         // Encrypt cache file
         $encrypted = self::encryptCache($data);
         file_put_contents(self::$cache_file, $encrypted);
         // Restrict file permissions to owner only
         chmod(self::$cache_file, 0600);
+        
+        // Remove emergency lock if exists
+        if (file_exists(self::$lock_file)) {
+            unlink(self::$lock_file);
+        }
     }
 
     public static function getCache() {
         if (!file_exists(self::$cache_file)) return null;
         $encrypted = file_get_contents(self::$cache_file);
         return self::decryptCache($encrypted);
+    }
+
+    /**
+     * Check if license cache was deleted
+     */
+    private static function isEmergencyLock() {
+        // If cache file exists but lock file doesn't, cache was deleted
+        if (!file_exists(self::$cache_file) && file_exists(self::$lock_file)) {
+            $lockData = json_decode(file_get_contents(self::$lock_file), true);
+            // Lock is active if deleted less than 24 hours ago
+            if (time() < ($lockData['deleted_at'] + 86400)) {
+                return true;
+            }
+            // Remove lock if older than 24 hours
+            unlink(self::$lock_file);
+        }
+        return false;
+    }
+
+    /**
+     * Create emergency lock when cache is deleted
+     */
+    private static function createEmergencyLock() {
+        $lockData = [
+            'deleted_at' => time(),
+            'reason' => 'Cache file missing',
+            'hostname' => gethostname(),
+            'ip' => $_SERVER['SERVER_ADDR'] ?? 'unknown'
+        ];
+        file_put_contents(self::$lock_file, json_encode($lockData));
+        chmod(self::$lock_file, 0600);
+    }
+
+    /**
+     * Verify cache file integrity
+     */
+    private static function verifyCacheIntegrity($cacheData) {
+        if (!isset($cacheData['_checksum'])) {
+            return false;
+        }
+        $checksum = $cacheData['_checksum'];
+        unset($cacheData['_checksum']);
+        $expectedChecksum = hash('sha256', json_encode($cacheData));
+        return hash_equals($checksum, $expectedChecksum);
     }
 }
