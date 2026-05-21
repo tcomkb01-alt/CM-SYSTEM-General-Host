@@ -13,14 +13,16 @@ $router->post('/login', 'AuthController@login');
 $router->get('/logout', 'AuthController@logout');
 $router->get('/cookie-policy', 'AuthController@cookiePolicy');
 
-// Public Attendance (no auth required - students scan QR)
-$router->get('/attendance/checkin/{sessionId}', 'AttendanceController@checkinPage');
-$router->post('/attendance/checkin/{sessionId}', 'AttendanceController@checkinSubmit');
+// Public Attendance (license verified - students scan QR)
+$router->group(['middleware' => ['LicenseMiddleware']], function($router) {
+    $router->get('/attendance/checkin/{sessionId}', 'AttendanceController@checkinPage');
+    $router->post('/attendance/checkin/{sessionId}', 'AttendanceController@checkinSubmit');
 
-// Student Portal (Public)
-$router->get('/portal/{room_code}', 'ClassroomController@portal');
-$router->post('/portal/{room_code}/login', 'ClassroomController@loginStudent');
-$router->get('/portal/{room_code}/logout', 'ClassroomController@logoutStudent');
+    // Student Portal (license verified)
+    $router->get('/portal/{room_code}', 'ClassroomController@portal');
+    $router->post('/portal/{room_code}/login', 'ClassroomController@loginStudent');
+    $router->get('/portal/{room_code}/logout', 'ClassroomController@logoutStudent');
+});
 
 // License Activation (Public)
 $router->get('/license/activate', 'LicenseController@activate');
@@ -73,6 +75,7 @@ $router->group(['middleware' => ['AuthMiddleware', 'CsrfMiddleware', 'LicenseMid
         $router->post('/admin/assignments/delete/{id}', 'AssignmentController@delete');
         $router->get('/admin/assignments/grading/{id}', 'AssignmentController@grading');
         $router->post('/admin/assignments/save-grade', 'AssignmentController@saveGrade');
+        $router->post('/admin/assignments/scan-student-code', 'AssignmentController@scanStudentCode');
 
         // Profile Routes
         $router->get('/admin/profile', 'ProfileController@index');
