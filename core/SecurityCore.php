@@ -15,15 +15,45 @@ class SecurityCore {
             DIRECTORY_SEPARATOR
         ];
         
+        // Add MAC address for stronger fingerprint
+        $mac = self::getMACAddress();
+        if ($mac) {
+            $data[] = $mac;
+        }
+        
         // Add CPU/Memory info if possible (platform dependent)
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $data[] = getenv('COMPUTERNAME');
             $data[] = getenv('PROCESSOR_IDENTIFIER');
         } else {
-            $data[] = shell_exec('cat /proc/cpuinfo | grep serial');
+            $cpuinfo = shell_exec('cat /proc/cpuinfo | grep serial');
+            if ($cpuinfo) {
+                $data[] = trim($cpuinfo);
+            }
         }
 
-        return hash('sha256', implode('|', $data));
+        return hash('sha256', implode('|', array_filter($data)));
+    }
+
+    /**
+     * Get MAC address of the primary network interface
+     */
+    private static function getMACAddress() {
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            // Windows
+            $mac = @shell_exec("ipconfig /all | findstr /I \"physical address\"");
+            if ($mac) {
+                preg_match('/([0-9A-F]{2}(-[0-9A-F]{2}){5})/', $mac, $matches);
+                return $matches[1] ?? null;
+            }
+        } else {
+            // Linux/Unix
+            $mac = @shell_exec("ip link show | grep -A 1 'link/ether' | grep 'ether' | head -1 | awk '{print $2}'");
+            if ($mac) {
+                return trim($mac);
+            }
+        }
+        return null;
     }
 
     /**

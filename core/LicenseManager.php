@@ -18,6 +18,10 @@ class LicenseManager {
         return self::getConfig('LICENSE_HMAC_SECRET', '2b5e8f0a1b3c6d9e5f7d2e8a1b9c4d3e6f8a2b5c9d0e1f4a7b3c6d9e0f1a4b7c');
     }
 
+    private static function getEncryptionKey() {
+        return self::getConfig('APP_KEY', hash('sha256', 'default-encryption-key'));
+    }
+
     private static $cache_file = __DIR__ . '/../storage/license.cache';
 
     /**
@@ -113,9 +117,9 @@ class LicenseManager {
                 return ['status' => 'valid', 'data' => $cache];
             }
         } catch (Exception $e) {
-            // If server is down, allow 3 days of offline grace period
+            // If server is down, allow 1 day of offline grace period
             $cache = self::getCache();
-            if ($cache && time() < ($cache['last_verified'] + (86400 * 3))) {
+            if ($cache && time() < ($cache['last_verified'] + 86400)) {
                 return ['status' => 'valid', 'message' => 'Offline mode active (Server unreachable).', 'data' => $cache];
             }
             return ['status' => 'error', 'message' => 'Unable to verify license online.'];
@@ -132,7 +136,8 @@ class LicenseManager {
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Important for some local environments
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         
         $result = curl_exec($ch);
         if (curl_errno($ch)) {
@@ -153,18 +158,54 @@ class LicenseManager {
         return hash_equals($expected, $signature);
     }
 
+    private static function encryptCache($data) {
+        $key = hash('sha256', self::getEncryptionKey(), true);
+        $iv = openssl_random_pseudo_bytes(16);
+        $encrypted = openssl_encrypt(
+            json_encode($data),
+            'AES-256-CBC',
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv
+        );
+        return base64_encode($iv . $encrypted);
+    }
+
+    private static function decryptCache($encrypted) {
+        try {
+            $key = hash('sha256', self::getEncryptionKey(), true);
+            $data = base64_decode($encrypted);
+            $iv = substr($data, 0, 16);
+            $ciphertext = substr($data, 16);
+            $decrypted = openssl_decrypt(
+                $ciphertext,
+                'AES-256-CBC',
+                $key,
+                OPENSSL_RAW_DATA,
+                $iv
+            );
+            return json_decode($decrypted, true);
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
     private static function saveCache($data) {
         // Ensure storage directory exists
         $dir = dirname(self::$cache_file);
         if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
+            mkdir($dir, 0755, true);
         }
-        // In production, encrypt this file content
-        file_put_contents(self::$cache_file, json_encode($data));
+        // Encrypt cache file
+        $encrypted = self::encryptCache($data);
+        file_put_contents(self::$cache_file, $encrypted);
+        // Restrict file permissions to owner only
+        chmod(self::$cache_file, 0600);
     }
 
     public static function getCache() {
         if (!file_exists(self::$cache_file)) return null;
-        return json_decode(file_get_contents(self::$cache_file), true);
+        $encrypted = file_get_contents(self::$cache_file);
+        return self::decryptCache($encrypted);
     }
 }
